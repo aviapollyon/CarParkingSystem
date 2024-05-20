@@ -1,0 +1,35 @@
+﻿@model List<CarParkingSystem.Models.FaultReport>
+
+@{
+    ViewData["Title"] = "Fault Reports";
+}
+
+<h2>Fault Reports</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Location</th>
+            <th>Description</th>
+            <th>Date Time</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var report in Model)
+        {
+            <tr>
+                <td>@report.Id</td>
+                <td>@report.Location</td>
+                <td>@report.Description</td>
+                <td>@report.DateTime</td>
+                <td>@report.Status</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

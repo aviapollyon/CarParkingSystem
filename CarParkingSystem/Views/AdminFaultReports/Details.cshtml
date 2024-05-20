@@ -1,0 +1,74 @@
+﻿@model CarParkingSystem.Models.FaultReport
+
+@{
+    ViewData["Title"] = "Fault Report Details";
+}
+
+<h2>Fault Report Details</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">
+            Id
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Id
+        </dd>
+        <dt class="col-sm-2">
+            Location
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Location
+        </dd>
+        <dt class="col-sm-2">
+            Description
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Description
+        </dd>
+        <dt class="col-sm-2">
+            Date Time
+        </dt>
+        <dd class="col-sm-10">
+            @Model.DateTime
+        </dd>
+        <dt class="col-sm-2">
+            Status
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Status
+        </dd>
+        <dt class="col-sm-2">
+            Assigned Tech
+        </dt>
+        <dd class="col-sm-10">
+            @{
+                var assignedTech = ViewBag.GuardUsers as IEnumerable<SelectListItem>;
+                var assignedTechValue = Model.AssignedTech?.ToString();
+                var selectedTech = assignedTech?.FirstOrDefault(u => u.Value == assignedTechValue);
+            }
+            @if (selectedTech != null)
+            {
+                @selectedTech.Text
+            }
+            else
+            {
+                <span>Not assigned</span>
+            }
+        </dd>
+
+        <div>
+            <form asp-action="AssignTech" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group">
+                    <label for="AssignedTech">Technician</label>
+                    @Html.DropDownList("AssignedTech", (SelectList)ViewBag.GuardUsers, "Select a technician", new { @class = "form-control" })
+                </div>
+                <button type="submit" class="btn btn-primary">Assign</button>
+            </form>
+        </div>
+
+    </dl>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

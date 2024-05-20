@@ -1,0 +1,30 @@
+﻿@model CarParkingSystem.Models.UpdateOccupancyViewModel
+
+@{
+    ViewData["Title"] = "Update Occupancy";
+}
+
+<h1>Update Occupancy</h1>
+
+<h4>Bay Section: @Model.BaySection</h4>
+
+<form asp-action="UpdateOccupancy" method="post">
+    <input type="hidden" asp-for="BaySection" />
+
+    <div class="form-group">
+        <label asp-for="NewStatus" class="control-label"></label>
+        <select asp-for="NewStatus" class="form-control">
+            <option value="occupied">Occupied</option>
+            <option value="unoccupied">Unoccupied</option>
+            <option value="reserved">Reserved</option>
+            <option value="unavailable">Unavailable</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="SpecificBayNumbers" class="control-label"></label>
+        <textarea asp-for="SpecificBayNumbers" class="form-control" placeholder="Enter Bay Numbers separated by commas"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update Occupancy</button>
+</form>

@@ -1,0 +1,31 @@
+﻿@model IEnumerable<CarParkingSystem.Models.ParkingBay>
+
+@{
+    ViewData["Title"] = "Parking Bays";
+}
+
+<h1>Parking Bays</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Bay Number</th>
+            <th>Bay Section</th>
+            <th>Occupancy</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+                <tr>
+                    <td>@item.BayNumber</td>
+                    <td>@item.BaySection</td>
+                    <td>@item.Occupacy</td>
+                    <td>
+                        <a asp-action="UpdateOccupancy" asp-route-baySection="@item.BaySection">Update Occupancy</a>
+                    </td>
+                </tr>
+        }
+    </tbody>
+</table>
