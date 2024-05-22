@@ -29,8 +29,13 @@ public class FaultReportsController : Controller
         {
             _context.FaultReports.Add(faultReport);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Create", "FaultReports"); // Redirect to a confirmation page or home
+            return RedirectToAction("Confirmation", "FaultReports"); // Redirect to a confirmation page or home
         }
         return View(faultReport);
+    }
+    [HttpGet]
+    public IActionResult Confirmation()
+    {
+        return View();
     }
 }

@@ -5,25 +5,33 @@
 }
 
 <h2>Fault Reports</h2>
-
+<div>
+    <a asp-action="IndexCompleted" class="btn btn-primary">View Fault History</a>
+</div>
 <table class="table">
     <thead>
         <tr>
-            <th>Id</th>
             <th>Location</th>
-            <th></th>
+            <th>Description</th>
+            <th>Date Reported</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var report in Model)
         {
-            <tr>
-                <td>@report.Id</td>
-                <td>@report.Location</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary">View Details</a>
-                </td>
-            </tr>
+            @if (report.Status != "Completed") // Check if status is not "Completed"
+            {
+                <tr>
+                    <td>@report.Location</td>
+                    <td>@report.Description</td>
+                    <td>@report.DateTime</td>
+                    <td>@report.Status</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary">View Details</a>
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>

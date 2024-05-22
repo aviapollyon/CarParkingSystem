@@ -56,8 +56,41 @@
                 <span>Not assigned</span>
             }
         </dd>
+    </dl>
 
-        <div>
+    @{
+        int progress = 0;
+        string progressBarClass = "";
+        switch (Model.Status)
+        {
+            case "Fixed":
+                progress = 100;
+                progressBarClass = "bg-success";
+                break;
+            case "Completed":
+                progress = 100;
+                progressBarClass = "bg-success";
+                break;
+            case "In Progress":
+                progress = 50;
+                progressBarClass = "bg-info";
+                break;
+            case "Awaiting Equipment":
+                progress = 25;
+                progressBarClass = "bg-warning";
+                break;
+        }
+    }
+
+    <div class="progress" style="height: 20px; margin-bottom: 10px;">
+        <!-- Adjust the height and margin as needed -->
+        <div class="progress-bar @progressBarClass" role="progressbar" style="width: @progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100">@progress%</div>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <!-- Add margin to separate the form and buttons -->
+        @if (Model.AssignedTech == null)
+        {
             <form asp-action="AssignTech" method="post">
                 <input type="hidden" asp-for="Id" />
                 <div class="form-group">
@@ -66,9 +99,19 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Assign</button>
             </form>
-        </div>
+        }
+        @if (Model.Status == "Complete")
+        {
+            <!-- "Verify as complete" button -->
+            <form asp-action="ChangeStatus" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="status" value="Completed" />
+                <button type="submit" class="btn btn-success">Verify as complete</button>
+            </form>
+        }
 
-    </dl>
+
+    </div>
 </div>
 
 <a asp-action="Index" class="btn btn-secondary">Back to List</a>

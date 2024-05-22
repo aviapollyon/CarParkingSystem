@@ -41,15 +41,57 @@
     </dl>
 </div>
 
-<div>
-    <form asp-action="ConfirmFault" method="post">
+@{
+    int progress = 0;
+    string progressBarClass = "";
+    switch (Model.Status)
+    {
+        case "Fixed":
+            progress = 100;
+            progressBarClass = "bg-success";
+            break;
+        case "In Progress":
+            progress = 50;
+            progressBarClass = "bg-info";
+            break;
+        case "Awaiting Equipment":
+            progress = 25;
+            progressBarClass = "bg-warning";
+            break;
+    }
+}
+
+<style>
+    .thick-progress {
+        height: 30px; /* Adjust the height as needed */
+    }
+
+    .btn-spacing {
+        margin-right: 10px; /* Adjust the margin as needed */
+    }
+</style>
+
+<div class="progress thick-progress">
+    <div class="progress-bar @progressBarClass" role="progressbar" style="width: @progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100">@progress%</div>
+</div>
+
+<div style="margin-top: 10px;">
+    <!-- Add margin to separate the form and buttons -->
+    <form asp-action="ChangeStatus" method="post">
         <input type="hidden" name="id" value="@Model.Id" />
-        <button type="submit" class="btn btn-success">Yes, this fault exists</button>
-    </form>
-    <form asp-action="DenyFault" method="post">
-        <input type="hidden" name="id" value="@Model.Id" />
-        <button type="submit" class="btn btn-danger">No, this fault does not exist</button>
+        <div class="form-group">
+            <label for="status">Select Status:</label>
+            <select name="status" id="status" class="form-control">
+                <option value="Fixed">Fixed</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Awaiting Equipment">Awaiting Equipment</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success btn-spacing">Update Status</button>
     </form>
 </div>
 
-<a asp-action="Index" class="btn btn-secondary">Back to List</a>
+<div style="margin-top: 10px;">
+    <!-- Add margin to separate the buttons -->
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

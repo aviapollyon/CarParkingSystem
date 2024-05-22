@@ -30,7 +30,7 @@ namespace CarParkingSystem.Controllers
             {
                 var assignedOrgNum = guard.orgNum;
                 var faultReports = await _context.FaultReports
-                    .Where(fr => fr.AssignedTech == assignedOrgNum)
+                    .Where(fr => fr.AssignedTech == assignedOrgNum && fr.Status != "VerifiedAsComplete")
                     .ToListAsync();
                 return View(faultReports);
             }
@@ -58,29 +58,30 @@ namespace CarParkingSystem.Controllers
         // POST: Guard/ConfirmFault
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmFault(int id)
+        public async Task<IActionResult> ChangeStatus(int id, string status)
         {
             var faultReport = await _context.FaultReports.FindAsync(id);
             if (faultReport != null)
             {
-                faultReport.Status = "  ";
+                faultReport.Status = status;
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Guard/DenyFault
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DenyFault(int id)
-        {
-            var faultReport = await _context.FaultReports.FindAsync(id);
-            if (faultReport != null)
-            {
-                _context.FaultReports.Remove(faultReport);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }
+
+        //// POST: Guard/DenyFault
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> DenyFault(int id)
+        //{
+        //    var faultReport = await _context.FaultReports.FindAsync(id);
+        //    if (faultReport != null)
+        //    {
+        //        _context.FaultReports.Remove(faultReport);
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    return RedirectToAction(nameof(Index));
+        //}
     }
 }

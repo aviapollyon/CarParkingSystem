@@ -27,6 +27,15 @@ public class AdminFaultReportsController : Controller
         return View(faultReports);
     }
 
+    public async Task<IActionResult> IndexCompleted()
+    {
+        var faultReports = await _context.FaultReports.ToListAsync();
+        return View(faultReports);
+    }
+
+
+
+
     // GET: Admin/Details/5
     //public async Task<IActionResult> Details(int? id)
     //{
@@ -101,5 +110,19 @@ public class AdminFaultReportsController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+    [HttpPost]
+    public IActionResult ChangeStatus(int id, string status)
+    {
+        var faultReport = _context.FaultReports.Find(id);
 
+        if (faultReport == null)
+        {
+            return NotFound();
+        }
+
+        faultReport.Status = status;
+        _context.SaveChanges();
+
+        return RedirectToAction("Index"); // Redirect to the list of fault reports after status change
+    }
 }

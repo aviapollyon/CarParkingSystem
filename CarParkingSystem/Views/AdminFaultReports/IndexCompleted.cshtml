@@ -1,4 +1,4 @@
-﻿@model List<CarParkingSystem.Models.FaultReport>
+﻿@model IEnumerable<CarParkingSystem.Models.FaultReport>
 
 @{
     ViewData["Title"] = "Fault Reports";
@@ -9,27 +9,24 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Id</th>
             <th>Location</th>
             <th>Description</th>
-            <th>Date Time</th>
+            <th>Date Reported</th>
             <th>Status</th>
-            <th>Action</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var report in Model)
         {
-            @if (report.Status != "Completed") // Check if status is not "Completed"
+            @if (report.Status == "Completed") // Check if status is not "Completed"
             {
                 <tr>
-                    <td>@report.Id</td>
                     <td>@report.Location</td>
                     <td>@report.Description</td>
                     <td>@report.DateTime</td>
                     <td>@report.Status</td>
                     <td>
-                        <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary">Details</a>
+                        <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary">View Details</a>
                     </td>
                 </tr>
             }
