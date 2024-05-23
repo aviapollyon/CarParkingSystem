@@ -116,7 +116,7 @@
                 <button type="submit" class="btn btn-primary btn-spacing">Assign</button>
             </form>
         }
-        @if (Model.Status != "Complete" && Model.Status != "Pending")
+        @if (Model.Status != "Completed" && Model.Status != "Pending")
         {
             <!-- "Verify as complete" button -->
             <form asp-action="ChangeStatus" method="post" class="mt-3">
