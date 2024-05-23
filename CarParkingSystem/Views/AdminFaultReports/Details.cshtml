@@ -58,16 +58,27 @@
         </dd>
     </dl>
 
+    <style>
+        .thick-progress {
+            height: 30px; /* Adjust the height as needed */
+        }
+
+        .btn-spacing {
+            margin-right: 10px; /* Adjust the margin as needed */
+        }
+
+        .btn-view-messages {
+            margin-top: 20px; /* Add more margin to separate from other buttons */
+            margin-right: 10px; /* Add space to the right of the View Messages button */
+        }
+    </style>
+
     @{
         int progress = 0;
         string progressBarClass = "";
         switch (Model.Status)
         {
             case "Fixed":
-                progress = 100;
-                progressBarClass = "bg-success";
-                break;
-            case "Completed":
                 progress = 100;
                 progressBarClass = "bg-success";
                 break;
@@ -79,15 +90,20 @@
                 progress = 25;
                 progressBarClass = "bg-warning";
                 break;
+            case "Stalled": // New case for "Stalled"
+                progress = 10; // Adjust the progress value as needed
+                progressBarClass = "bg-danger"; // Set the progress bar color to red
+                break;
         }
+
     }
 
-    <div class="progress" style="height: 20px; margin-bottom: 10px;">
+    <div class="progress thick-progress mb-3">
         <!-- Adjust the height and margin as needed -->
         <div class="progress-bar @progressBarClass" role="progressbar" style="width: @progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100">@progress%</div>
     </div>
 
-    <div style="margin-bottom: 10px;">
+    <div class="mb-3">
         <!-- Add margin to separate the form and buttons -->
         @if (Model.AssignedTech == null)
         {
@@ -97,21 +113,27 @@
                     <label for="AssignedTech">Technician</label>
                     @Html.DropDownList("AssignedTech", (SelectList)ViewBag.GuardUsers, "Select a technician", new { @class = "form-control" })
                 </div>
-                <button type="submit" class="btn btn-primary">Assign</button>
+                <button type="submit" class="btn btn-primary btn-spacing">Assign</button>
             </form>
         }
-        @if (Model.Status == "Complete")
+        @if (Model.Status != "Complete" && Model.Status != "Pending")
         {
             <!-- "Verify as complete" button -->
-            <form asp-action="ChangeStatus" method="post">
+            <form asp-action="ChangeStatus" method="post" class="mt-3">
+                <!-- Added margin top class -->
                 <input type="hidden" name="id" value="@Model.Id" />
                 <input type="hidden" name="status" value="Completed" />
-                <button type="submit" class="btn btn-success">Verify as complete</button>
+                <button type="submit" class="btn btn-success btn-spacing">Verify as complete</button>
             </form>
         }
-
 
     </div>
 </div>
 
-<a asp-action="Index" class="btn btn-secondary">Back to List</a>
+<div class="mb-3">
+    <a asp-action="Messages" asp-controller="Technician" asp-route-id="@Model.Id" class="btn btn-info btn-view-messages">View Messages</a>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Back to  List</a>
+
+

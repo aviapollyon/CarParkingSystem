@@ -1,0 +1,82 @@
+﻿@model Tuple<CarParkingSystem.Models.FaultReport, List<CarParkingSystem.Models.FaultReportMessage>>
+
+@{
+    ViewData["Title"] = "Fault Report Messages";
+    var faultReport = Model.Item1;
+    var messages = Model.Item2;
+}
+
+<h2>Fault Report Messages for Fault Id @faultReport.Id</h2>
+
+@* <div>
+    <h3>Fault Details</h3>
+    <p><strong>Location:</strong> @faultReport.Location</p>
+    <p><strong>Description:</strong> @faultReport.Description</p>
+    <p><strong>Date Time:</strong> @faultReport.DateTime</p>
+    <p><strong>Status:</strong> @faultReport.Status</p>
+</div> *@
+
+<div>
+    <h3>Messages</h3>
+    @foreach (var message in messages)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">@message.Title</h5>
+                <p class="card-text">@message.MessageReport</p>
+                <p class="card-text"><small class="text-muted">Posted on @message.DateTime</small></p>
+                @if (message.Image != null)
+                {
+                    <img src="data:image;base64,@Convert.ToBase64String(message.Image)" alt="Message Image" class="img-fluid" />
+                }
+            </div>
+        </div>
+    }
+</div>
+@if (User.IsInRole("Technician"))
+{
+    <div>
+        <h3>Add a new message</h3>
+        <form asp-action="AddMessage" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="FaultId" value="@faultReport.Id" />
+            <div class="form-group">
+                <label for="Title">Title</label>
+                <input type="text" class="form-control" id="Title" name="Title" required />
+            </div>
+            <div class="form-group">
+                <label for="MessageReport">Message</label>
+                <textarea class="form-control" id="MessageReport" name="MessageReport" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="Image">Upload Image (optional)</label>
+                <input type="file" class="form-control-file" id="Image" name="Image" accept="image/*" onchange="previewImage(event)" />
+            </div>
+            <div class="form-group">
+                <img id="imagePreview" src="#" alt="Image Preview" style="display:none; max-height: 200px; margin-top: 10px;" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Submit</button>
+        </form>
+    </div>
+    <a asp-action="Details" asp-route-id="@faultReport.Id" class="btn btn-secondary" style="margin-top: 10px;">Back to Details</a>
+}
+else if (User.IsInRole("Admin"))
+{
+    <a asp-action="Details" asp-controller="AdminFaultReports" asp-route-id="@faultReport.Id" class="btn btn-secondary">Back to Details</a>
+}
+
+
+
+
+@section Scripts {
+    <script>
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var output = document.getElementById('imagePreview');
+                output.src = reader.result;
+                output.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+}

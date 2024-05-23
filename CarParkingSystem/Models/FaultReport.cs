@@ -8,6 +8,7 @@ namespace CarParkingSystem.Models
 
         [Required]
         [StringLength(1, ErrorMessage = "Location must be a single letter.")]
+        [Display(Name = "Parking Section Affected")]
         public string Location { get; set; }
 
         [Required]

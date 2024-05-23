@@ -36,7 +36,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<EventCheckIn> EventCheckIns {  get; set; } 
     public DbSet<ViolationPayment> ViolationPayments {  get; set; } 
     public DbSet<ViolationAppeal> ViolationAppeals {  get; set; }
-    public DbSet<FaultReport> FaultReports { get; set; }       //Avinash's Code Addition
+    public DbSet<FaultReport> FaultReports { get; set; }
+    public DbSet<FaultReportMessage> FaultReportMessage { get; set; }  //Avinash's Code Addition
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

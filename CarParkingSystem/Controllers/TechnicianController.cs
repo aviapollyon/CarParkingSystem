@@ -9,7 +9,7 @@ using CarParkingSystem.Areas.Identity.Data;
 
 namespace CarParkingSystem.Controllers
 {
-    [Authorize(Roles = "Technician")]
+    [Authorize(Roles = "Technician,Admin")]
     public class TechnicianController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -68,20 +68,58 @@ namespace CarParkingSystem.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+        public IActionResult Messages(int id)
+        {
+            var faultReport = _context.FaultReports.FirstOrDefault(f => f.Id == id);
+            var messages = _context.FaultReportMessage.Where(m => m.FaultId == id).ToList();
 
+            if (faultReport == null)
+            {
+                return NotFound();
+            }
 
-        //// POST: Guard/DenyFault
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DenyFault(int id)
-        //{
-        //    var faultReport = await _context.FaultReports.FindAsync(id);
-        //    if (faultReport != null)
-        //    {
-        //        _context.FaultReports.Remove(faultReport);
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    return RedirectToAction(nameof(Index));
-        //}
+            var model = new Tuple<FaultReport, List<FaultReportMessage>>(faultReport, messages);
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult AddMessage(int FaultId, string Title, string MessageReport, IFormFile? Image)
+        {
+            var newMessage = new FaultReportMessage
+            {
+                FaultId = FaultId,
+                Title = Title,
+                MessageReport = MessageReport,
+                DateTime = DateTime.Now
+            };
+
+            if (Image != null && Image.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    Image.CopyTo(memoryStream);
+                    newMessage.Image = memoryStream.ToArray();
+                }
+            }
+
+            _context.FaultReportMessage.Add(newMessage);
+            _context.SaveChanges();
+
+            return RedirectToAction("Messages", new { id = FaultId });
+        }
+
+        // POST: Guard/DenyFault
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DenyFault(int id)
+        {
+            var faultReport = await _context.FaultReports.FindAsync(id);
+            if (faultReport != null)
+            {
+                _context.FaultReports.Remove(faultReport);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

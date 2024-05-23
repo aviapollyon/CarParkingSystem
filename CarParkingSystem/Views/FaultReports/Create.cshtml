@@ -9,19 +9,46 @@
 <form asp-action="Create" method="post">
     <div class="form-group">
         <label asp-for="Location"></label>
-        <input asp-for="Location" class="form-control" />
+        @Html.DropDownListFor(model => model.Location, new SelectList(new[]
+                 {
+        "A",
+        "B",
+        }), "Select Location", new { @class = "form-control" })
         <span asp-validation-for="Location" class="text-danger"></span>
     </div>
+
     <div class="form-group">
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
+        <label>Description:</label><br />
+        <input type="radio" name="Description" value="Road/Surface Damage" /> Road/Surface Damage<br />
+        <input type="radio" name="Description" value="Deterioate Line Markings" /> Deterioate Line Markings<br />
+        <input type="radio" name="Description" value="Drainage Issues" /> Drainage Issues<br />
+        <input type="radio" name="Description" value="Structural Damage" /> Structural Damage<br />
+        <input type="radio" name="Description" value="Lighting Issues" /> Lighting Issues<br />
+        <input type="radio" name="Description" value="Vegetation Overgrowth" /> Vegetation Overgrowth<br />
+        <input type="radio" name="Description" value="Graffiti or Vandalism" /> Graffiti or Vandalism<br />
+        <input type="radio" name="Description" value="Other" id="otherRadio" /> Other<br />
+        <textarea id="otherDescription" name="Description" class="form-control" style="display: none;"></textarea>
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <script>
+        $(document).ready(function () {
+            $('input[name="Description"]').change(function () {
+                if ($(this).val() === 'Other') {
+                    $('#otherDescription').show().focus();
+                } else {
+                    $('#otherDescription').hide();
+                }
+            });
+
+            $('form').submit(function () {
+                if ($('#otherRadio').is(':checked')) {
+                    var otherDescriptionValue = $('#otherDescription').val();
+                    $('input[name="Description"]').val(otherDescriptionValue);
+                }
+            });
+        });
+    </script>
 }

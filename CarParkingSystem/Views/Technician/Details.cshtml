@@ -58,7 +58,12 @@
             progress = 25;
             progressBarClass = "bg-warning";
             break;
+        case "Stalled": // New case for "Stalled"
+            progress = 10; // Adjust the progress value as needed
+            progressBarClass = "bg-danger"; // Set the progress bar color to red
+            break;
     }
+
 }
 
 <style>
@@ -68,6 +73,10 @@
 
     .btn-spacing {
         margin-right: 10px; /* Adjust the margin as needed */
+    }
+
+    .btn-view-messages {
+        margin-top: 20px; /* Add more margin to separate from other buttons */
     }
 </style>
 
@@ -82,14 +91,29 @@
         <div class="form-group">
             <label for="status">Select Status:</label>
             <select name="status" id="status" class="form-control">
-                <option value="Fixed">Fixed</option>
                 <option value="In Progress">In Progress</option>
+                <option value="Fixed">Fixed</option>
                 <option value="Awaiting Equipment">Awaiting Equipment</option>
+                <option value="Stalled">Stalled</option>
             </select>
         </div>
         <button type="submit" class="btn btn-success btn-spacing">Update Status</button>
     </form>
 </div>
+<div>
+    <a asp-action="Messages" asp-route-id="@Model.Id" class="btn btn-info btn-view-messages">View Messages</a>
+</div>
+@if (Model.Status == "Pending")
+{
+    <div style="margin-top: 10px;">
+        <!-- Add margin to separate the buttons -->
+        <form asp-action="DenyFault" method="post">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="btn btn-danger btn-spacing">Dismiss</button>
+        </form>
+    </div>
+}
+
 
 <div style="margin-top: 10px;">
     <!-- Add margin to separate the buttons -->

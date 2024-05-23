@@ -85,6 +85,19 @@ public class AdminFaultReportsController : Controller
 
         return View(faultReport);
     }
+    [HttpPost]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var faultReport = await _context.FaultReports.FindAsync(id);
+        if (faultReport == null)
+        {
+            return NotFound();
+        }
+
+        _context.FaultReports.Remove(faultReport);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
 
 
     // POST: Admin/AssignTech

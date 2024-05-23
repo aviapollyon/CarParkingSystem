@@ -3,7 +3,20 @@
 @{
     ViewData["Title"] = "Fault Reports";
 }
+<style>
+    .thick-progress {
+        height: 30px; /* Adjust the height as needed */
+    }
 
+    .btn-spacing {
+        margin-right: 10px; /* Adjust the margin as needed */
+    }
+
+    .btn-view-messages {
+        margin-top: 20px; /* Add more margin to separate from other buttons */
+        margin-right: 10px; /* Add space to the right of the View Messages button */
+    }
+</style>
 <h2>Fault Reports</h2>
 <div>
     <a asp-action="IndexCompleted" class="btn btn-primary">View Fault History</a>
@@ -15,12 +28,13 @@
             <th>Description</th>
             <th>Date Reported</th>
             <th>Status</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var report in Model)
         {
-            @if (report.Status != "Completed") // Check if status is not "Completed"
+            @if (report.Status != "Completed") // Exclude records with status "Completed"
             {
                 <tr>
                     <td>@report.Location</td>
@@ -28,10 +42,29 @@
                     <td>@report.DateTime</td>
                     <td>@report.Status</td>
                     <td>
-                        <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary">View Details</a>
+                        @if (report.Status == "Pending")
+                        {
+                            <div>
+                                <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary btn-sm btn-view-messages" style="display: block; margin-bottom: 5px; width: 80px;">View</a>
+                                <form asp-action="Delete" asp-route-id="@report.Id" method="post" style="display: block;">
+                                    <button type="submit" class="btn btn-danger btn-sm" style="margin-top: 5px;">Dismiss</button>
+                                </form>
+                            </div>
+
+                        }
+                        else
+                        {
+                            <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-primary btn-sm">View Details</a>
+                        }
                     </td>
                 </tr>
             }
+        }
+        @if (!Model.Any(report => report.Status != "Completed")) // Check if there are no fault reports with status "Completed"
+        {
+            <tr>
+                <td colspan="5">No Fault Reports</td> 
+            </tr>
         }
     </tbody>
 </table>
