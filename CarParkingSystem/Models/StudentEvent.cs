@@ -32,6 +32,17 @@ namespace CarParkingSystem.Models
         public string StartTime {  get; set; }
         [NotMapped]
         [Required]
-        public string EndTime { get; set; } 
+        public string EndTime { get; set; }
+
+        public static ValidationResult ValidateEventEndDate(DateTime eventEndDate, ValidationContext context)
+        {
+            var model = (StudentEvent)context.ObjectInstance;
+            if (eventEndDate <= DateTime.Today)
+            {
+                return new ValidationResult("Event end date must be a future date.");
+            }
+
+            return ValidationResult.Success;
+        }
     }
 }

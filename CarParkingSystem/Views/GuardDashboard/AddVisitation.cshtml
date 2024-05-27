@@ -8,6 +8,9 @@
         margin: 120px auto;
     }
 </style>
+<div style="margin-top:20px">
+    <h4 class="text-center">Add a visitation </h4>
+</div>
 <div class="add-bay-form2">
     <form asp-action="AddVisitation" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -16,12 +19,14 @@
                 <div class="mb-3">
                     <label class="rana-form-label">First Name:</label>
                     <input type="text" asp-for="FirstNmae" class="rana-form-input" placeholder="Insert First Name">
+                    <span class="text-danger" asp-validation-for="FirstNmae"></span>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="rana-form-label">Last Name:</label>
                     <input type="text" asp-for="LastNmae" class="rana-form-input" placeholder="Insert Last Name">
+                    <span class="text-danger" asp-validation-for="LastNmae"></span>
                 </div>
             </div>
         </div>
@@ -40,20 +45,20 @@
                     <span asp-validation-for="RegistrationPlate" class="text-danger"></span>
                 </div>
             </div>
-
         </div>
-
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="rana-form-label">Entry Date:</label>
-                    <input type="text" asp-for="EntryDate" class="rana-form-input" readonly value="@System.DateTime.Today.ToString("MM/dd/yyyy")">
+                    <input type="date" asp-for="EntryDate" class="rana-form-input" id="EntryDate">
+                    <span asp-validation-for="EntryDate" class="text-danger"></span>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="rana-form-label">Entry Time:</label>
-                    <input type="text" asp-for="EntryTime" id="currentTime"  class="rana-form-input" readonly>
+                    <input type="time" asp-for="EntryTime" class="rana-form-input">
+                    <span asp-validation-for="EntryTime" class="text-danger"></span>
                 </div>
             </div>
         </div>
@@ -71,32 +76,26 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
-    var currentTime = new Date();
-    var hours = currentTime.getHours();
-    var minutes = currentTime.getMinutes();
-    hours = (hours < 10 ? "0" : "") + hours;
-    minutes = (minutes < 10 ? "0" : "") + minutes;
-    document.getElementById("currentTime").value = hours + ":" + minutes;
-    </script>
-<script>
-    $(document).ready(function () {
-        $.ajax({
-            url: '/GuardDashboard/GetSpot', 
-            type: 'GET', 
-            success: function (response) {
-                $('#ParkingS').text('This driver will be allocated into spot: ' + response.bayId);
-                $('#ParkingBay').val(response.bayId);
+        $(document).ready(function () {
+            // Set the min attribute for EntryDate to today's date
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById("EntryDate").setAttribute('min', today);
 
-            },
-            error: function (xhr, status, error) {
-                if (xhr.status === 400) {
-                    $('.text-center').hide();
-                    $('#ParkingS').text('There is no available parking spot.');
+            // Fetch parking spot information
+            $.ajax({
+                url: '/GuardDashboard/GetSpot',
+                type: 'GET',
+                success: function (response) {
+                    $('#ParkingS').text('This driver will be allocated into spot: ' + response.bayId);
+                    $('#ParkingBay').val(response.bayId);
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 400) {
+                        $('.text-center').hide();
+                        $('#ParkingS').text('There is no available parking spot.');
+                    }
                 }
-            }
+            });
         });
-    });
-
-</script>
-
+    </script>
 }

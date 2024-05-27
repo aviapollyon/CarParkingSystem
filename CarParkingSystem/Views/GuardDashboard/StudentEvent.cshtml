@@ -6,9 +6,41 @@
 <style>
     .admin-other-forms {
         margin-left: 100px;
-        margin-bottom:50px
+        margin-bottom: 50px;
+    }
+
+    #cameraModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    #cameraModalContent {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    video {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+    }
+
+    .disabled-btn {
+        background-color: #cccccc;
+        cursor: not-allowed;
     }
 </style>
+
 <div style="margin-top:20px">
     <h4 class="text-center">Booking </h4>
 </div>
@@ -18,8 +50,7 @@
             <h3>Event Name:</h3>
         </dt>
         <dd class="col-sm-5">
-            <h3> @Html.DisplayFor(model => model.EventName)</h3>
-
+            <h3>@Html.DisplayFor(model => model.EventName)</h3>
         </dd>
         <dt class="col-sm-7">
             First Name of host:
@@ -62,30 +93,55 @@
         </dt>
         <dd class="col-sm-5">
             <h3>@Html.DisplayFor(model => model.ParkingSection)</h3>
-
         </dd>
     </dl>
     <hr class="mt-2" />
     <form id="eventCheckInForm">
-        <div class="row" style="margin-top:40px" >
-
+        <div class="row" style="margin-top:40px">
             <input type="hidden" id="eventId" name="eventId" value="@Model.EventId" />
             <div class="col-md-6">
-                <label class="rana-form-label">Vehicle Registration Plate.</label>
+                <label class="rana-form-label">Vehicle Registration Plate</label>
                 <input type="text" id="registrationPlate" class="rana-form-input" placeholder="Insert Vehicle plate here" />
             </div>
-            <div class="col-md-6" >
-                <button type="button" id="checkInButton" class="rana-form-btn w-75" style="margin-top:30px">Check-In Vehicle</button>
+            <div class="col-md-6">
+                <button type="button" id="checkInButton" class="rana-form-btn w-75 disabled-btn" style="margin-top:30px;" disabled>Check-In Vehicle</button>
+                <p id="confirmMessage" style="display: none; color: red;">Please click the "Confirm" box to confirm</p>
             </div>
-
-
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <input type="checkbox" id="confirmCheckbox" /> Confirm
+            </div>
+            <div class="col-md-6">
+                <button type="button" id="openCameraButton" class="rana-form-btn w-75">Open Camera</button>
+            </div>
         </div>
     </form>
-</div >
+</div>
+
+<!-- Camera modal -->
+<div id="cameraModal">
+    <div id="cameraModalContent">
+        <video id="cameraPreview" autoplay></video>
+        <button id="captureButton" class="rana-form-btn">Capture</button>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v2.1.4/dist/tesseract.min.js"></script>
     <script>
         $(document).ready(function () {
+            $('#confirmCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#checkInButton').removeClass('disabled-btn').prop('disabled', false);
+                    $('#confirmMessage').hide();
+                } else {
+                    $('#checkInButton').addClass('disabled-btn').prop('disabled', true);
+                    $('#confirmMessage').show();
+                }
+            });
+
             $('#checkInButton').click(function () {
                 var eventId = $('#eventId').val();
                 var registrationPlate = $('#registrationPlate').val();
@@ -107,7 +163,7 @@
                                 window.location.href = '../GuardDashboard/StudentEvent';
                             });
                         } else {
-                            swal("Error deleting!", response.message, "error");
+                            swal("Error!", response.message, "error");
                         }
                     },
                     error: function (xhr, status, error) {
@@ -115,8 +171,43 @@
                     }
                 });
             });
+
+            $('#openCameraButton').click(function () {
+                $('#cameraModal').css('display', 'block');
+
+                const video = document.getElementById('cameraPreview');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const constraints = {
+                    video: {
+                        facingMode: 'environment'
+                    }
+                };
+
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.play();
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                    });
+
+                $('#captureButton').click(function () {
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    video.pause();
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                    $('#cameraModal').css('display', 'none');
+
+                    Tesseract.recognize(canvas, 'eng')
+                        .then(function (result) {
+                            $('#registrationPlate').val(result.data.text.trim());
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                        });
+                });
+            });
         });
     </script>
-
 }
-

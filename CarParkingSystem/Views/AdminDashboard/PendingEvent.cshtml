@@ -48,14 +48,9 @@
 
                                     bool otherEventExists = Model.Any(x => x.Id != item.Id && x.EventStartDate.Date == item.EventStartDate.Date);
 
-                                    if (paymentExists || otherEventExists)
-                                    {
-                                        <p>Already confirmed one event</p>
-                                    }
-                                    else
-                                    {
+
                                         <a style="text-decoration:none" class="tbl-btn" href="javascript:void(0)" onclick="confirmEvent('@item.Id')">Approve?</a>
-                                    }
+                                    
                                 }
                                 else
                                 {
@@ -80,15 +75,27 @@
 
                                     if (currentDate >= startDate && currentDate <= endDate)
                                     {
+                                        if (item.isDelete == false)
+                                        {
+                                            <a style="text-decoration:none" class="tbl-btn" asp-action="EndEvent" asp-route-id="@item.Id">End Event</a>
 
-                                        <p>Event Pending</p>
+                                        }
+                                        else
+                                        {
+                                            <p>This Event has ended.</p>
+                                        }
                                     }
                                     else if (currentDate <= startDate)
                                     {
-                                       
-                                            <p>This Event has not started.</p>
-                                        
+                                        if (item.isDelete == false)
+                                        {
+                                            <a style="text-decoration:none" class="tbl-btn" asp-action="EndEvent" asp-route-id="@item.Id">End Event</a>
 
+                                        }
+                                        else
+                                        {
+                                            <p>This Event has ended.</p>
+                                        }
 
                                     }
                                     else

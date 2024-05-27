@@ -7,6 +7,9 @@
         margin: 120px auto;
     }
 </style>
+<div style="margin-top:20px">
+    <h4 class="text-center">Request A Booking</h4>
+</div>
 <div class="add-bay-form2">
     <form asp-action="RequestBooking" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -26,7 +29,7 @@
                         <option value="Education">Education</option>
                         <option value="Recreational">Recreational</option>
                         <option value="Conference">Conference</option>
-                        <option value="NetWorking Event">NetWorking Event</option>
+                        <option value="Networking Event">Networking Event</option>
                     </select>
                 </div>
             </div>
@@ -37,14 +40,12 @@
                     <label class="rana-form-label">Parking Section:</label>
                     <select class="rana-form-input" asp-for="ParkingBayId" id="ParkingSection">
                     </select>
-
-
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="rana-form-label">Number of Vechicle arrive in parking spots:</label>
-                    <input type="number" asp-for="VehicleArrive" class="rana-form-input" placeholder="Insert Vechicle arrive">
+                    <label class="rana-form-label">Expected Vehicle Arrivals:</label>
+                    <input type="number" asp-for="VehicleArrive" class="rana-form-input" placeholder="Insert Vehicle Arrivals">
                     <span asp-validation-for="VehicleArrive" class="text-danger"></span>
                 </div>
             </div>
@@ -53,7 +54,7 @@
             <div class="col-md-3">
                 <div class="mb-3">
                     <label class="rana-form-label">Event Start Date:</label>
-                    <input type="date" asp-for="EventStartDate" class="rana-form-input">
+                    <input type="date" asp-for="EventStartDate" class="rana-form-input" id="EventStartDate">
                     <span asp-validation-for="EventStartDate" class="text-danger"></span>
                 </div>
             </div>
@@ -67,7 +68,7 @@
             <div class="col-md-3">
                 <div class="mb-3">
                     <label class="rana-form-label">Event End Date:</label>
-                    <input type="date" asp-for="EventEndDate" class="rana-form-input">
+                    <input type="date" asp-for="EventEndDate" class="rana-form-input" id="EventEndDate">
                     <span asp-validation-for="EventEndDate" class="text-danger"></span>
                 </div>
             </div>
@@ -82,26 +83,29 @@
         <div class="row">
             <div class="col-md-12">
                 <label class="rana-form-label">Event Description:</label>
-                <textarea class="form-control" asp-for="EventDescription" rows="6" placeholder="Event Description">
-
-                </textarea>
+                <textarea class="form-control" asp-for="EventDescription" rows="6" placeholder="Event Description"></textarea>
                 <span asp-validation-for="EventDescription" class="text-danger"></span>
             </div>
         </div>
         <div id="errorMessage" class="text-danger"></div>
 
         <div class="text-center mt-5">
-            <button type="submit" class="rana-form-btn w-75">Request Submit</button>
+            <button type="submit" class="rana-form-btn w-75">Submit Request</button>
         </div>
     </form>
-
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
     <script>
         $(document).ready(function () {
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById("EventStartDate").setAttribute('min', today);
+            document.getElementById("EventEndDate").setAttribute('min', new Date().toISOString().split('T')[0]);
+
             $.ajax({
                 url: '/EventBooking/GetSpot',
                 type: 'GET',
@@ -121,7 +125,16 @@
                     }
                 }
             });
-        });
 
+            // Client-side validation for Event End Date
+            $('#EventEndDate').on('change', function () {
+                var endDate = new Date($(this).val());
+                var startDate = new Date($('#EventStartDate').val());
+                if (endDate <= startDate) {
+                    alert('Event End Date must be after the Event Start Date.');
+                    $(this).val('');
+                }
+            });
+        });
     </script>
 }
