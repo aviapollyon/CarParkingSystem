@@ -1,0 +1,27 @@
+﻿@model List<CarParkingSystem.Models.Schedule>
+
+<h2>Your Assigned Shifts</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Shift Name</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Break Start</th>
+            <th>Break End</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var schedule in Model)
+        {
+            <tr>
+                <td>@schedule.Shift.Name</td>
+                <td>@schedule.Shift.inTime</td>
+                <td>@schedule.Shift.outTime</td>
+                <td>@schedule.Shift.inBreak</td>
+                <td>@schedule.Shift.outBreak</td>
+            </tr>
+        }
+    </tbody>
+</table>

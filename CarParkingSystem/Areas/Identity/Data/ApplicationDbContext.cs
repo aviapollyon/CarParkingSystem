@@ -37,7 +37,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ViolationPayment> ViolationPayments {  get; set; } 
     public DbSet<ViolationAppeal> ViolationAppeals {  get; set; }
     public DbSet<FaultReport> FaultReports { get; set; }
-    public DbSet<FaultReportMessage> FaultReportMessage { get; set; }  //Avinash's Code Addition
+    public DbSet<FaultReportMessage> FaultReportMessage { get; set; }
+    public DbSet<Shift> Shifts { get; set; }
+    public DbSet<Schedule> Schedule { get; set; }//Avinash's Code Addition
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

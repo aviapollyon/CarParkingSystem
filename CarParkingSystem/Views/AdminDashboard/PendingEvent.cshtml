@@ -49,7 +49,7 @@
                                     bool otherEventExists = Model.Any(x => x.Id != item.Id && x.EventStartDate.Date == item.EventStartDate.Date);
 
 
-                                        <a style="text-decoration:none" class="tbl-btn" href="javascript:void(0)" onclick="confirmEvent('@item.Id')">Approve?</a>
+                                        <a style="text-decoration:none" class="tbl-btn" href="javascript:void(0)" onclick="confirmEvent('@item.Id')">Approve Event</a>
                                     
                                 }
                                 else

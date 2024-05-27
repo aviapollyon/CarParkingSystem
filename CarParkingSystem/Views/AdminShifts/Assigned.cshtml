@@ -1,0 +1,51 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using CarParkingSystem.Areas.Identity.Data
+@inject UserManager<ApplicationUser> UserManager
+@model List<Schedule>
+
+<h2>Assigned Shifts</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Guard Name</th>
+            <th>Shift Name</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Break Start</th>
+            <th>Break End</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var schedule in Model)
+        {
+            <tr>
+                <td>
+                    @{
+                        var user = await ApplicationUser.FindByOrgNumAsync(UserManager, schedule.orgNum);
+                        if (user != null)
+                        {
+                            <span>@user.FirstName @user.LastName</span>
+                        }
+                        else
+                        {
+                            <span>User Not Found</span>
+                        }
+                    }
+                </td>
+                <td>@schedule.Shift.Name</td>
+                <td>@schedule.Shift.inTime</td>
+                <td>@schedule.Shift.outTime</td>
+                <td>@schedule.Shift.inBreak</td>
+                <td>@schedule.Shift.outBreak</td>
+                <td>
+                    <form asp-action="RemoveAssigned" method="post">
+                        <input type="hidden" name="scheduleId" value="@schedule.Id" />
+                        <button type="submit" class="btn btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

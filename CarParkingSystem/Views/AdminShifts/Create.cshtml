@@ -1,0 +1,35 @@
+﻿@model Shift
+
+<h2>Create Shift</h2>
+
+<form asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group">
+        <label asp-for="Name" class="control-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="inTime" class="control-label"></label>
+        <input asp-for="inTime" class="form-control" type="time" />
+        <span asp-validation-for="inTime" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="outTime" class="control-label"></label>
+        <input asp-for="outTime" class="form-control" type="time" />
+        <span asp-validation-for="outTime" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="inBreak" class="control-label"></label>
+        <input asp-for="inBreak" class="form-control" type="time" />
+        <span asp-validation-for="inBreak" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="outBreak" class="control-label"></label>
+        <input asp-for="outBreak" class="form-control" type="time" />
+        <span asp-validation-for="outBreak" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-primary" />
+    </div>
+</form>

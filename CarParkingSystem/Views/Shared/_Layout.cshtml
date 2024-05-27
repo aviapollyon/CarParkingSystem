@@ -57,6 +57,9 @@
                             <a asp-action="PendingEvent" asp-controller="AdminDashboard">Booking</a>
                             <a asp-action="StudentAppeal" asp-controller="AdminDashboard">Appeals</a>
                             <a asp-action="Index" asp-controller="AdminFaultReports">Fault Reports</a>
+                            <a asp-action="Index" asp-controller="AdminShifts">Guard Shifts</a>
+                            <a asp-action="Index" asp-controller="AdminAssign">Assign Guard Shifts</a>
+                            <a asp-action="Assigned" asp-controller="AdminShifts">Unassign Guard Shifts</a>
                         </div>
                     }
                     else if (User.IsInRole("Student"))
@@ -89,6 +92,7 @@
                             <a asp-action="BookingNotExist" asp-controller="GuardDashboard">Booking</a>
                             <a asp-action="ViolationVerification" asp-controller="Violation">Violations</a>
                             <a asp-action="Index" asp-controller="ParkingBay">Update Sections</a>
+                            <a asp-action="Index" asp-controller="GuardShifts">My Shift Times</a>
 
                         </div>
                     }
