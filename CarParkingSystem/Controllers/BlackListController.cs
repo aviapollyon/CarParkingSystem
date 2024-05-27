@@ -27,18 +27,10 @@ namespace CarParkingSystem.Controllers
         {
             if( blackList != null)
             {
-                var obj = _context.Vehicles.Where(x => x.regPlateNum == blackList.RegPlate).FirstOrDefault();
-                if (obj != null)
-                {
+   
                     _context.BlackListDrivers.Add(blackList);
                     _context.SaveChanges();
                     return RedirectToAction("Index");
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, $"This Register number{blackList.RegPlate} is not avaible in our system");
-                    return View(blackList);
-                }
             }
             return View(blackList);
         }

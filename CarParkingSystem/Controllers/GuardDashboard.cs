@@ -561,21 +561,23 @@ namespace CarParkingSystem.Controllers
         [HttpPost]
         public IActionResult AddVisitation(Visitation visitation)
         {
-            if(visitation !=null)
+            if (visitation != null)
             {
-                var verification = _context.BlackListDrivers.Where(x => x.RegPlate == visitation.RegistrationPlate).FirstOrDefault();
-                if(verification == null)
+                var verification = _context.BlackListDrivers
+                    .FirstOrDefault(x => x.RegPlate == visitation.RegistrationPlate
+                        || (x.FirstName == visitation.FirstNmae && x.LastName == visitation.LastNmae));
+
+                if (verification == null)
                 {
                     _context.Visitations.Add(visitation);
                     _context.SaveChanges();
 
-                    var obj = _context.ParkingBays.Where(x => x.BayId == visitation.ParkingBay).FirstOrDefault();
-                    if(obj !=null)
+                    var obj = _context.ParkingBays.FirstOrDefault(x => x.BayId == visitation.ParkingBay);
+                    if (obj != null)
                     {
                         obj.Occupacy = "Occupied";
                         _context.ParkingBays.Update(obj);
                         _context.SaveChanges();
-                        return RedirectToAction("Visitation");
                     }
                     return RedirectToAction("Visitation");
                 }
@@ -584,14 +586,14 @@ namespace CarParkingSystem.Controllers
                     ModelState.AddModelError(string.Empty, "This driver has been blacklisted");
                     return View(visitation);
                 }
-                
+
             }
             else
             {
                 return View(visitation);
             }
-           
         }
+
         [Authorize(Roles = "Guard")]
         public IActionResult VisitationDetails(int id)
         {

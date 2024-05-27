@@ -1,13 +1,47 @@
-﻿@model CarParkingSystem.Models.Visitation
+﻿@* 
+
+@model CarParkingSystem.Models.Visitation
 @{
     ViewData["Title"] = "Add Visitation";
 }
 
 <style>
+    /* Your existing styles */
     .add-bay-form2 {
         margin: 120px auto;
     }
+
+    .disabled-btn {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+    #cameraModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    #cameraModalContent {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    video {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+    }
 </style>
+
 <div style="margin-top:20px">
     <h4 class="text-center">Add a visitation </h4>
 </div>
@@ -41,7 +75,7 @@
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="rana-form-label">Registration Plate:</label>
-                    <input type="text" asp-for="RegistrationPlate" class="rana-form-input" placeholder="Insert Registration Plate">
+                    <input type="text" asp-for="RegistrationPlate" class="rana-form-input" id="registrationPlate" placeholder="Insert Registration Plate">
                     <span asp-validation-for="RegistrationPlate" class="text-danger"></span>
                 </div>
             </div>
@@ -62,39 +96,277 @@
                 </div>
             </div>
         </div>
-        <div class="row" style="margin-bottom: 80px;">
-            <p class="rana-form-label" id="ParkingS">This driver will be allocated into spot: </p>
-            <input type="hidden" asp-for="ParkingBay" id="ParkingBay" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <button type="button" class="rana-form-btn w-75" id="openCameraButton">Open Camera</button>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label><input type="checkbox" id="confirmCheckbox"> Confirm</label>
+                </div>
+            </div>
         </div>
+
         <div class="text-center">
-            <button type="submit" class="rana-form-btn w-75">Record Visitation</button>
+            <button type="submit" class="rana-form-btn w-75" id="recordVisitationButton" disabled>Record Visitation</button>
         </div>
     </form>
 </div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<!-- Camera modal -->
+<div id="cameraModal">
+    <div id="cameraModalContent">
+        <video id="cameraPreview" autoplay></video>
+        <button id="captureButton" class="rana-form-btn">Capture</button>
+    </div>
+</div>
+<!-- End of camera modal -->
 
+@section Scripts {
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
     <script>
         $(document).ready(function () {
-            // Set the min attribute for EntryDate to today's date
+            $('#confirmCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#recordVisitationButton').prop('disabled', false);
+                } else {
+                    $('#recordVisitationButton').prop('disabled', true);
+                }
+            });
+
+            $('#openCameraButton').click(function () {
+                $('#cameraModal').css('display', 'block');
+
+                const video = document.getElementById('cameraPreview');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const constraints = {
+                    video: {
+                        facingMode: 'environment'
+                    }
+                };
+
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.play();
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                    });
+
+                $('#captureButton').click(function () {
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    video.pause();
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                    $('#cameraModal').css('display', 'none');
+
+                    Tesseract.recognize(canvas, 'eng')
+                        .then(function (result) {
+                            $('#registrationPlate').val(result.data.text.trim());
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                        });
+                });
+            });
+        });
+    </script>
+}
+
+ *@
+
+@model CarParkingSystem.Models.Visitation
+@{
+    ViewData["Title"] = "Add Visitation";
+}
+
+<style>
+    /* Your existing styles */
+    .add-bay-form2 {
+        margin: 120px auto;
+    }
+
+    .disabled-btn {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    #openCameraButton {
+        width: 50%;
+    }
+
+    /* Grey out the Record Visitation button when checkbox is not checked */
+    #recordVisitationButton[disabled] {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    /* Camera overlay styles */
+    #cameraOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        display: none;
+    }
+
+        #cameraOverlay > div {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+    #cameraPreview {
+        max-width: 100%;
+        max-height: 100%;
+    }
+</style>
+
+<div style="margin-top:20px">
+    <h4 class="text-center">Add a visitation </h4>
+</div>
+<div class="add-bay-form2">
+    <form asp-action="AddVisitation" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="rana-form-label">First Name:</label>
+                    <input type="text" asp-for="FirstNmae" class="rana-form-input" placeholder="Insert First Name">
+                    <span class="text-danger" asp-validation-for="FirstNmae"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="rana-form-label">Last Name:</label>
+                    <input type="text" asp-for="LastNmae" class="rana-form-input" placeholder="Insert Last Name">
+                    <span class="text-danger" asp-validation-for="LastNmae"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="rana-form-label">Purpose of Visit:</label>
+                    <input type="text" asp-for="purpose" class="rana-form-input" placeholder="Insert Purpose of Visit">
+                    <span class="text-danger" asp-validation-for="purpose"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="RegistrationPlate" class="control-label">Registration Plate</label>
+                    <input asp-for="RegistrationPlate" class="form-control" id="registrationPlateInput">
+                    <span asp-validation-for="RegistrationPlate" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="rana-form-label">Entry Date:</label>
+                    <input type="date" asp-for="EntryDate" class="rana-form-input" id="EntryDate">
+                    <span asp-validation-for="EntryDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="rana-form-label">Entry Time:</label>
+                    <input type="time" asp-for="EntryTime" class="rana-form-input">
+                    <span asp-validation-for="EntryTime" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <button type="button" class="rana-form-btn w-75" id="openCameraButton">Open Camera</button>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label><input type="checkbox" id="confirmCheckbox"> Confirm</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="rana-form-btn w-75" id="recordVisitationButton" disabled>Record Visitation</button>
+        </div>
+    </form>
+</div>
+
+<!-- Camera overlay container -->
+<div id="cameraOverlay">
+    <div>
+        <video id="cameraPreview" autoplay></video>
+        <button id="captureButton" class="rana-form-btn" style="margin-top: 10px;">Capture</button>
+    </div>
+</div>
+<!-- End of camera overlay container -->
+@section Scripts {
+
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+
+
+        $(document).ready(function () {
             var today = new Date().toISOString().split('T')[0];
             document.getElementById("EntryDate").setAttribute('min', today);
 
-            // Fetch parking spot information
-            $.ajax({
-                url: '/GuardDashboard/GetSpot',
-                type: 'GET',
-                success: function (response) {
-                    $('#ParkingS').text('This driver will be allocated into spot: ' + response.bayId);
-                    $('#ParkingBay').val(response.bayId);
-                },
-                error: function (xhr, status, error) {
-                    if (xhr.status === 400) {
-                        $('.text-center').hide();
-                        $('#ParkingS').text('There is no available parking spot.');
-                    }
+            $('#confirmCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#recordVisitationButton').prop('disabled', false);
+                } else {
+                    $('#recordVisitationButton').prop('disabled', true);
                 }
+            });
+
+            $('#openCameraButton').click(function () {
+                $('#cameraOverlay').css('display', 'block');
+
+                const video = document.getElementById('cameraPreview');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const constraints = {
+                    video: {
+                        facingMode: 'environment'
+                    }
+                };
+
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.play();
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                    });
+
+                $('#captureButton').click(function () {
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    video.pause();
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                    $('#cameraOverlay').css('display', 'none');
+
+                    Tesseract.recognize(canvas, 'eng')
+                        .then(function (result) {
+                            $('#registrationPlate').val(result.data.text.trim());
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                        });
+                });
             });
         });
     </script>
