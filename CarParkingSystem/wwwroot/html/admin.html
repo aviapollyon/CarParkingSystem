@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guard Shift Schedule</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .calendar-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+            .calendar-header h2 {
+                margin: 0;
+            }
+
+        .nav-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #007bff;
+        }
+
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .calendar-table th,
+            .calendar-table td {
+                border: 1px solid #ddd;
+                padding: 10px;
+                text-align: center;
+            }
+
+        .shift-slot {
+            font-weight: bold;
+        }
+
+        .schedule-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        /* Colors for guards */
+        .guard-1 {
+            background-color: #ffd700; /* Yellow */
+        }
+
+        .guard-2 {
+            background-color: #ff6347; /* Tomato */
+        }
+
+        .guard-3 {
+            background-color: #87ceeb; /* Sky Blue */
+        }
+
+        .guard-4 {
+            background-color: #32cd32; /* Lime Green */
+        }
+
+        .guard-5 {
+            background-color: #ff69b4; /* Hot Pink */
+        }
+
+        .guard-6 {
+            background-color: #8a2be2; /* Blue Violet */
+        }
+
+        .guard-7 {
+            background-color: #00ced1; /* Dark Turquoise */
+        }
+
+        .guard-8 {
+            background-color: #da70d6; /* Orchid */
+        }
+
+        .guard-9 {
+            background-color: #4682b4; /* Steel Blue */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calendar-container">
+        <h1 class="schedule-title">Guard Shift Schedule</h1>
+        <div class="calendar-header">
+            <button class="nav-button" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+            <h2 id="currentMonth">May 2024</h2>
+            <button class="nav-button" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <table class="calendar-table">
+            <thead>
+                <tr>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                </tr>
+            </thead>
+            <tbody id="calendarBody"></tbody>
+        </table>
+
+        <div>
+            <button id="viewWeekly">View Weekly Schedule</button>
+            <button id="viewDaily">View Daily Schedule</button>
+            <a href="guard.html"><button>Go to Guard Page</button></a>
+            <a href="GuardDetails.html"><button>View Guard Details</button></a>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for guard shifts
+        const guardShifts = [];
+        const guards = ["Guard 1", "Guard 2", "Guard 3", "Guard 4", "Guard 5", "Guard 6", "Guard 7", "Guard 8", "Guard 9"];
+        let guardIndex = 0; // Index to cycle through guards
+
+        for (let month = 0; month < 12; month++) {
+            const daysInMonth = new Date(2024, month + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                guardShifts.push({
+                    date: new Date(2024, month, day),
+                    guards: [guards[guardIndex], guards[(guardIndex + 1) % 9], guards[(guardIndex + 2) % 9]],
+                    shiftTimes: ["08:00 - 16:00", "16:00 - 00:00", "00:00 - 08:00"]
+                });
+                guardIndex = (guardIndex + 3) % 9; // Increment guard index and wrap around if needed
+            }
+        }
+
+        // Function to generate calendar for the specified month
+        function generateCalendar(year, month) {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const totalDays = lastDay.getDate();
+            const startingDay = firstDay.getDay();
+
+            const calendarBody = document.getElementById("calendarBody");
+            calendarBody.innerHTML = '';
+
+            let date = 1;
+            for (let i = 0; i < 6; i++) {
+                const row = document.createElement("tr");
+                for (let j = 0; j < 7; j++) {
+                    if (i === 0 && j < startingDay) {
+                        const cell = document.createElement("td");
+                        row.appendChild(cell);
+                    } else if (date > totalDays) {
+                        break;
+                    } else {
+                        const cell = document.createElement("td");
+                        const cellContent = document.createElement("div");
+                        const shiftSlot = document.createElement("div");
+
+                        cell.textContent = date;
+                        shiftSlot.classList.add("shift-slot");
+
+                        // Find guard shifts for the current date
+                        const shift = guardShifts.find(s => s.date.getDate() === date && s.date.getMonth() === month && s.date.getFullYear() === year);
+                        if (shift) {
+                            if (shift.guards.length > 0) {
+                                shift.guards.forEach((guard, index) => {
+                                    const shiftTime = shift.shiftTimes[index];
+                                    const guardSlot = document.createElement("div");
+                                    guardSlot.textContent = `${guard} (${shiftTime})`;
+                                    guardSlot.classList.add(`guard-${index + 1}`); // Add class for guard color
+                                    shiftSlot.appendChild(guardSlot);
+                                });
+                            } else {
+                                shiftSlot.textContent = ""; // Clear shiftSlot content
+                            }
+                        } else {
+                            shiftSlot.textContent = "";
+                        }
+
+                        cellContent.appendChild(shiftSlot);
+                        cell.appendChild(cellContent);
+                        row.appendChild(cell);
+                        date++;
+                    }
+                }
+                calendarBody.appendChild(row);
+            }
+        }
+
+        // Function to handle navigation to previous month
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateCalendar();
+        }
+
+        // Function to handle navigation to next month
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            updateCalendar();
+        }
+
+        // Function to update the displayed month in the header
+        function updateCalendar() {
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            document.getElementById("currentMonth").textContent = monthNames[currentMonth] + " " + currentYear;
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        // Initial display for May 2024
+        let currentYear = 2024;
+        let currentMonth = 4; // May is 0-indexed
+
+        // Event listeners for navigation buttons
+        document.getElementById("prevMonth").addEventListener("click", prevMonth);
+        document.getElementById("nextMonth").addEventListener("click", nextMonth);
+
+        // Initial calendar generation
+        updateCalendar();
+
+        // Event listener for view weekly button
+        document.getElementById("viewWeekly").addEventListener("click", function () {
+            // Implement logic to display weekly schedule
+            console.log("Viewing Weekly Schedule");
+        });
+
+        // Event listener for view daily button
+        document.getElementById("viewDaily").addEventListener("click", function () {
+            // Implement logic to display daily schedule
+            console.log("Viewing Daily Schedule");
+        });
+    </script>
+
+</body>
+</html>

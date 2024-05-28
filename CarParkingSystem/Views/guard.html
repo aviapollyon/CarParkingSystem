@@ -1,0 +1,705 @@
+﻿<!--<<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guard Page</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        nav {
+            margin-bottom: 20px;
+        }
+
+        #guard {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+            button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            button:hover:disabled {
+                background-color: #ccc;
+            }
+
+        #qrCode {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+            #qrCode canvas {
+                display: inline-block;
+            }
+
+        #guardDetails {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guard Page</h1>
+    <nav>
+        <a href="admin.html">Go to Admin Page</a>
+    </nav>
+    <div id="guard">
+        <h2>Guard Actions</h2>
+        <label for="guardName">Name:</label>
+        <input type="text" id="guardName" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+        <button id="generateQR">Generate QR Code</button>
+        <div id="qrCode"></div>
+        <p id="guardDetails"></p>
+        <button id="scanQR" disabled>Scan QR Code</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const guardShifts = [];
+
+            function retrieveGuardShiftsFromAdminPage() {
+                const guards = ["Guard 1", "Guard 2", "Guard 3", "Guard 4", "Guard 5", "Guard 6", "Guard 7", "Guard 8", "Guard 9"];
+                let guardIndex = 0;
+
+                for (let month = 0; month < 12; month++) {
+                    const daysInMonth = new Date(2024, month + 1, 0).getDate();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        guardShifts.push({
+                            date: new Date(2024, month, day),
+                            guards: [guards[guardIndex], guards[(guardIndex + 1) % 9], guards[(guardIndex + 2) % 9]],
+                            shiftTimes: ["08:00 - 16:00", "16:00 - 00:00", "00:00 - 08:00"]
+                        });
+                        guardIndex = (guardIndex + 3) % 9;
+                    }
+                }
+            }
+
+            retrieveGuardShiftsFromAdminPage();
+
+            let scanCount = 0;
+            let qrCodeIds = {};
+
+            function generateUniqueId() {
+                return Date.now().toString();
+            }
+
+            function updateGuardDetails(details) {
+                $('#guardDetails').html(details);
+            }
+
+            $('#generateQR').on('click', function () {
+                const guardName = $('#guardName').val();
+                const password = $('#password').val();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Dummy authentication logic
+                if (true) {
+                    const qrCodeId = generateUniqueId();
+                    qrCodeIds[qrCodeId] = guardName;
+                    localStorage.setItem('qrCodeIds', JSON.stringify(qrCodeIds));
+
+                    const guardShift = guardShifts.find(shift => {
+                        const shiftDate = new Date(shift.date);
+                        shiftDate.setHours(0, 0, 0, 0);
+                        return shiftDate.getTime() === today.getTime() && shift.guards.includes(guardName);
+                    });
+
+                    if (guardShift) {
+                        $('#qrCode').empty().qrcode({
+                            text: qrCodeId,
+                            width: 128,
+                            height: 128
+                        });
+                        alert('QR Code generated.');
+                        $('#scanQR').prop('disabled', false);
+                    } else {
+                        alert('Guard is not scheduled to work today.');
+                    }
+                } else {
+                    alert('Invalid name or password.');
+                }
+            });
+
+            $('#scanQR').on('click', function () {
+                if (scanCount >= 3) {
+                    $('#scanQR').prop('disabled', true).text('Guard shift has ended for the day');
+                    return;
+                }
+                scanCount++;
+                const scannedId = prompt('Enter scanned QR code:');
+                const guardName = qrCodeIds[scannedId];
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const shift = guardShifts.find(shift => {
+                    const shiftDate = new Date(shift.date);
+                    shiftDate.setHours(0, 0, 0, 0);
+                    return shiftDate.getTime() === today.getTime() && shift.guards.includes(guardName);
+                });
+
+                if (shift) {
+                    let details = `Guard: ${guardName}<br>Shift Time: ${shift.shiftTimes.join(', ')}<br>`;
+                    const shiftTime = new Date(`1970-01-01T${shift.shiftTimes[0].split(' - ')[0]}:00`);
+                    const now = new Date();
+
+                    if (now < shiftTime) {
+                        details += `On Time: ${now.toLocaleString()}`;
+                    } else if (now > shiftTime) {
+                        details += `Late: ${now.toLocaleString()}`;
+                    } else {
+                        details += `Early: ${now.toLocaleString()}`;
+                    }
+
+                    if (!shift.checkInTime) {
+                        shift.checkInTime = now.toLocaleString();
+                        details += `<br>Checked In: ${shift.checkInTime}`;
+                    } else if (!shift.breakTime) {
+                        shift.breakTime = now.toLocaleString();
+                        details += `<br>Break Time: ${shift.breakTime}`;
+                    } else if (!shift.checkOutTime) {
+                        shift.checkOutTime = now.toLocaleString();
+                        details += `<br>Checked Out: ${shift.checkOutTime}`;
+                    }
+                    updateGuardDetails(details);
+                } else {
+                    alert('Invalid QR Code or Guard is not scheduled to work today.');
+                }
+            });
+
+            $('#guardName').on('input', function () {
+                scanCount = 0;
+                $('#scanQR').prop('disabled', false).text('Scan QR Code');
+                $('#qrCode').empty(); // Clear the QR code
+               updateGuardDetails('');
+
+            });
+        });
+    </script>
+</body>
+</html>-->
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guard Page</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        nav {
+            margin-bottom: 20px;
+        }
+
+        #guard {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+            button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            button:hover:disabled {
+                background-color: #ccc;
+            }
+
+        #qrCode {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+            #qrCode canvas {
+                display: inline-block;
+            }
+
+        #guardDetailsTable {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #guardDetailsTable th, #guardDetailsTable td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            #guardDetailsTable th {
+                background-color: #f2f2f2;
+            }
+    </style>
+</head>
+<body>
+    <h1>Guard Page</h1>
+    <nav>
+        <a href="admin.html">Go to Admin Page</a>
+    </nav>
+    <div id="guard">
+        <h2>Guard Actions</h2>
+        <label for="guardName">Name:</label>
+        <input type="text" id="guardName" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+        <button id="generateQR">Generate QR Code</button>
+        <div id="qrCode"></div>
+        <table id="guardDetailsTable">
+            <thead>
+                <tr>
+                    <th>Guard</th>
+                    <th>Shift Time</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="guardDetailsBody"></tbody>
+        </table>
+        <button id="scanQR" disabled>Scan QR Code</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const guardShifts = [];
+
+            function retrieveGuardShiftsFromAdminPage() {
+                const guards = ["Guard 1", "Guard 2", "Guard 3", "Guard 4", "Guard 5", "Guard 6", "Guard 7", "Guard 8", "Guard 9"];
+                let guardIndex = 0;
+
+                for (let month = 0; month < 12; month++) {
+                    const daysInMonth = new Date(2024, month + 1, 0).getDate();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        guardShifts.push({
+                            date: new Date(2024, month, day),
+                            guards: [guards[guardIndex], guards[(guardIndex + 1) % 9], guards[(guardIndex + 2) % 9]],
+                            shiftTimes: ["08:00 - 16:00", "16:00 - 00:00", "00:00 - 08:00"]
+                        });
+                        guardIndex = (guardIndex + 3) % 9;
+                    }
+                }
+            }
+
+            retrieveGuardShiftsFromAdminPage();
+
+            let scanCount = 0;
+            let qrCodeIds = {};
+
+            function generateUniqueId() {
+                return Date.now().toString();
+            }
+
+            function updateGuardDetailsTable(details) {
+                $('#guardDetailsBody').append(`
+                            <tr>
+                                <td>${details.guardName}</td>
+                                <td>${details.shiftTime}</td>
+                                <td>${details.status}</td>
+                                <td>${details.time}</td>
+                            </tr>
+                        `);
+            }
+
+            $('#generateQR').on('click', function () {
+                const guardName = $('#guardName').val();
+                const password = $('#password').val();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Dummy authentication logic
+                if (true) {
+                    const qrCodeId = generateUniqueId();
+                    qrCodeIds[qrCodeId] = guardName;
+                    localStorage.setItem('qrCodeIds', JSON.stringify(qrCodeIds));
+
+                    const guardShift = guardShifts.find(shift => {
+                        const shiftDate = new Date(shift.date);
+                        shiftDate.setHours(0, 0, 0, 0);
+                        return shiftDate.getTime() === today.getTime() && shift.guards.includes(guardName);
+                    });
+
+                    if (guardShift) {
+                        $('#qrCode').empty().qrcode({
+                            text: qrCodeId,
+                            width: 128,
+                            height: 128
+                        });
+                        alert('QR Code generated.');
+                        $('#scanQR').prop('disabled', false);
+                    } else {
+                        alert('Guard is not scheduled to work today.');
+                    }
+                } else {
+                    alert('Invalid name or password.');
+                }
+            });
+
+            $('#scanQR').on('click', function () {
+                if (scanCount >= 3) {
+                    $('#scanQR').prop('disabled', true).text('Guard shift has ended for the day');
+                    return;
+                }
+                scanCount++;
+                const scannedId = prompt('Enter scanned QR code:');
+                const guardName = qrCodeIds[scannedId];
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const shift = guardShifts.find(shift => {
+                    const shiftDate = new Date(shift.date);
+                    shiftDate.setHours(0, 0, 0, 0);
+                    return shiftDate.getTime() === today.getTime() && shift.guards.includes(guardName);
+                });
+
+                if (shift) {
+                    let details = {
+                        guardName: guardName,
+                        shiftTime: shift.shiftTimes.join(', '),
+                        status: '',
+                        time: ''
+                    };
+                    const shiftTime = new Date(`1970-01-01T${shift.shiftTimes[0].split(' - ')[0]}:00`);
+                    const now = new Date();
+
+                    if (now < shiftTime) {
+                        details.status = `On Time`;
+                    } else if (now > shiftTime) {
+                        details.status = `Late`;
+                    } else {
+                        details.status = `Early`;
+                    }
+
+                    if (!shift.checkInTime) {
+                        shift.checkInTime = now.toLocaleString();
+                        details.time = `${shift.checkInTime}`;
+                    } else if (!shift.breakTime) {
+                        shift.breakTime = now.toLocaleString();
+                        details.time = `${shift.breakTime}`;
+                    } else if (!shift.checkOutTime) {
+                        shift.checkOutTime = now.toLocaleString();
+                        details.time = `${shift.checkOutTime}`;
+                    }
+                    updateGuardDetailsTable(details);
+                } else {
+                    alert('Invalid QR Code or Guard is not scheduled to work today.');
+                }
+            });
+
+            $('#guardName').on('input', function () {
+                scanCount = 0;
+                $('#scanQR').prop('disabled', false).text('Scan QR Code');
+                $('#qrCode').empty(); // Clear the QR code
+                $('#guardDetailsBody').empty(); // Clear the table
+            });
+        });
+    </script>
+</body>
+</html>-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guard Page</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        nav {
+            margin-bottom: 20px;
+        }
+
+        #guard {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+            button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            button:hover:disabled {
+                background-color: #ccc;
+            }
+
+        #qrCode {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+            #qrCode canvas {
+                display: inline-block;
+            }
+
+        #guardDetails {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guard Page</h1>
+    <nav>
+        <a href="admin.html">Go to Admin Page</a>
+    </nav>
+    <div id="guard">
+        <h2>Guard Actions</h2>
+        <label for="guardName">Name:</label>
+        <input type="text" id="guardName" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+        <button id="generateQR">Generate QR Code</button>
+        <div id="qrCode"></div>
+        <p id="guardDetails"></p>
+        <button id="scanQR" disabled>Scan QR Code</button>
+    </div>
+
+    <table id="guardDetailsTable">
+        <thead>
+            <tr>
+                <th>Guard</th>
+                <th>Shift Times</th>
+                <th>Status</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody id="guardDetailsBody">
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function () {
+            const guardShifts = [];
+
+            function retrieveGuardShiftsFromAdminPage() {
+                const guards = ["Guard 1", "Guard 2", "Guard 3", "Guard 4", "Guard 5", "Guard 6", "Guard 7", "Guard 8", "Guard 9"];
+                let guardIndex = 0;
+
+                for (let month = 0; month < 12; month++) {
+                    const daysInMonth = new Date(2024, month + 1, 0).getDate();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        guardShifts.push({
+                            date: new Date(2024, month, day),
+                            guards: [guards[guardIndex], guards[(guardIndex + 1) % 9], guards[(guardIndex + 2) % 9]],
+                            shiftTimes: ["08:00 - 16:00", "16:00 - 00:00", "00:00 - 08:00"]
+                        });
+                        guardIndex = (guardIndex + 3) % 9;
+                    }
+                }
+            }
+
+            retrieveGuardShiftsFromAdminPage();
+
+            let scanCount = 0;
+            let qrCodeIds = {};
+
+            function generateUniqueId() {
+                return Date.now().toString();
+            }
+
+            function updateGuardDetailsTable(details) {
+                $('#guardDetailsBody').append(`
+                                <tr>
+                                    <td>${details.guard}</td>
+                                    <td>${details.shiftTimes}</td>
+                                    <td>${details.status}</td>
+                                    <td>${details.time}</td>
+                                </tr>
+                            `);
+            }
+
+            $('#generateQR').on('click', function () {
+                const guardName = $('#guardName').val();
+                const password = $('#password').val();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Dummy authentication logic
+                if (true) {
+                    const qrCodeId = generateUniqueId();
+                    qrCodeIds[qrCodeId] = guardName;
+                    localStorage.setItem('qrCodeIds', JSON.stringify(qrCodeIds));
+
+                    const guardShift = guardShifts.find(shift => {
+                        const shiftDate = new Date(shift.date);
+                        shiftDate.setHours(0, 0, 0, 0);
+                        return shiftDate.getTime() === today.getTime() && shift.guards.includes(guardName);
+                    });
+
+                    if (guardShift) {
+                        $('#qrCode').empty().qrcode({
+                            text: qrCodeId,
+                            width: 128,
+                            height: 128
+                        });
+                        alert('QR Code generated.');
+                        $('#scanQR').prop('disabled', false);
+                    } else {
+                        alert('Guard is not scheduled to work today.');
+                    }
+                } else {
+                    alert('Invalid name or password.');
+                }
+            });
+
+            $('#scanQR').on('click', function () {
+                if (scanCount >= 3) {
+                    $('#scanQR').prop('disabled', true).text('Guard shift has ended for the day');
+                    return;
+                }
+                scanCount++;
+                const scannedId = prompt('Enter scanned QR code:');
+                const guardName = qrCodeIds[scannedId];
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const shift = guardShifts.find(shift => {
+                    const shiftDate = new Date(shift.date);
+                    shiftDate.setHours(0, 0, 0, 0);
+                    return shiftDate.getTime() === today.getTime() && shift.guards.includes(guardName);
+                });
+
+                if (shift) {
+                    let status;
+                    const now = new Date();
+
+                    if (!shift.checkInTime) {
+                        shift.checkInTime = now.toLocaleString();
+                        status = 'Checked In';
+                    } else if (!shift.breakTime) {
+                        shift.breakTime = now.toLocaleString();
+                        status =
+                            'On Break';
+                    } else if (!shift.checkOutTime) {
+                        shift.checkOutTime = now.toLocaleString();
+                        status = 'Checked Out';
+                    }
+                    updateGuardDetailsTable({
+                        guard: guardName,
+                        shiftTimes: shift.shiftTimes.join(', '),
+                        status: status,
+                        time: now.toLocaleString()
+                    });
+                } else {
+                    alert('Invalid QR Code or Guard is not scheduled to work today.');
+                }
+            });
+
+            $('#guardName').on('input', function () {
+                scanCount = 0;
+                $('#scanQR').prop('disabled', false).text('Scan QR Code');
+                $('#qrCode').empty(); // Clear the QR code
+            });
+        });
+    </script>
+

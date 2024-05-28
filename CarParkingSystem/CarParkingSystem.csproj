@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\html\admin.html" />
+    <Content Remove="wwwroot\html\guard.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="iTextSharp" Version="5.5.13.3" />
     <PackageReference Include="jQuery" Version="3.7.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.29" />
@@ -25,6 +30,11 @@
   <ItemGroup>
     <Folder Include="wwwroot\GeneratedQRCode\" />
     <Folder Include="wwwroot\ViolationImage\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\html\admin.html" />
+    <None Include="wwwroot\html\guard.html" />
   </ItemGroup>
 
 </Project>
